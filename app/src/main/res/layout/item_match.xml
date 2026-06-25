@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Estadio.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Home Team -->
+        <TextView
+            android:id="@+id/homeTeamName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="MEX"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@+id/scoreLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Score Input / Display -->
+        <LinearLayout
+            android:id="@+id/scoreLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@+id/awayTeamName"
+            app:layout_constraintStart_toEndOf="@id/homeTeamName"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <EditText
+                android:id="@+id/homeScoreInput"
+                android:layout_width="50dp"
+                android:layout_height="60dp"
+                android:background="@color/stadium_gray_locked"
+                android:gravity="center"
+                android:inputType="number"
+                android:textColor="@color/stadium_accent"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:hint="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:text=":"
+                android:textColor="@color/white"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/awayScoreInput"
+                android:layout_width="50dp"
+                android:layout_height="60dp"
+                android:background="@color/stadium_gray_locked"
+                android:gravity="center"
+                android:inputType="number"
+                android:textColor="@color/stadium_accent"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:hint="0" />
+        </LinearLayout>
+
+        <!-- Away Team -->
+        <TextView
+            android:id="@+id/awayTeamName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="ARG"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/scoreLayout"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Footer: Time and Button -->
+        <TextView
+            android:id="@+id/matchTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="HOY 18:00 - CIERRA EN 45M"
+            android:textColor="@color/stadium_gray_text"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scoreLayout" />
+
+        <Button
+            android:id="@+id/saveButton"
+            style="@style/Widget.Estadio.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GUARDAR"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scoreLayout" />
+
+        <ImageView
+            android:id="@+id/lockIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_lock_idle_lock"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scoreLayout"
+            app:tint="@color/stadium_gray_text" />
+
+        <!-- Revealed Section -->
+        <LinearLayout
+            android:id="@+id/revealedLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/matchTimeText">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/stadium_gray_locked"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/userPredictionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TÚ: 2 - 1 (ACIERTO +1)"
+                android:textColor="@color/stadium_accent"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/rivalPredictionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RIVAL: 0 - 0 (FALLO 0)"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

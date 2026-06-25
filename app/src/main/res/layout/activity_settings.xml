@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:background="@color/stadium_black"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="IDENTIDAD QUINIELA"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+    <EditText
+        android:id="@+id/tokenInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="ESCRIBE TU TOKEN (pajaro o roman)"
+        android:textColor="@color/stadium_accent"
+        android:textColorHint="@color/stadium_gray_text"
+        android:backgroundTint="@color/stadium_accent"
+        android:gravity="center"
+        android:inputType="text"/>
+
+    <Button
+        android:id="@+id/btnSaveToken"
+        style="@style/Widget.Estadio.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="IDENTIFICARME"
+        android:layout_marginTop="32dp"/>
+
+    <Button
+        android:id="@+id/btnLogout"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BORRAR SESIÓN"
+        android:textColor="@color/stadium_error"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>

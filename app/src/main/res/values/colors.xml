@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Estadio Design System -->
+    <color name="stadium_black">#121212</color>
+    <color name="stadium_green_deep">#1B5E20</color>
+    <color name="stadium_green_pitch">#2E7D32</color>
+    <color name="stadium_accent">#C6FF00</color>
+    <color name="stadium_error">#D32F2F</color>
+    <color name="stadium_gray_locked">#424242</color>
+    <color name="stadium_gray_text">#BDBDBD</color>
+</resources>

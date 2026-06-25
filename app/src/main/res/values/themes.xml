@@ -1,0 +1,29 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.QUINIELAPAJAROVSROMAN" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">@color/stadium_black</item>
+        <item name="colorPrimary">@color/stadium_green_pitch</item>
+        <item name="colorSecondary">@color/stadium_accent</item>
+        <item name="android:statusBarColor">@color/stadium_black</item>
+    </style>
+
+    <style name="Theme.QUINIELAPAJAROVSROMAN" parent="Base.Theme.QUINIELAPAJAROVSROMAN" />
+
+    <!-- Estadio Style: Hard Edges -->
+    <style name="Widget.Estadio.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">0dp</item>
+        <item name="cardBackgroundColor">@color/stadium_black</item>
+        <item name="cardElevation">2dp</item>
+    </style>
+
+    <style name="Widget.Estadio.Button" parent="Widget.Material3.Button">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Estadio.Button</item>
+        <item name="backgroundTint">@color/stadium_accent</item>
+        <item name="android:textColor">@color/stadium_black</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ShapeAppearance.Estadio.Button" parent="">
+        <item name="cornerSize">0dp</item>
+    </style>
+</resources>
