@@ -29,6 +29,9 @@
                 <data android:scheme="https" android:host="quiniela2026.com" android:pathPrefix="/auth" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
