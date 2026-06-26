@@ -3,6 +3,7 @@ package com.example.quinielapajarovsroman;
 import android.content.Context;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,7 @@ public class MatchRepository {
     private final ApiService apiService;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final ZoneId CDMX_ZONE = ZoneId.of("America/Mexico_City");
+    private final MutableLiveData<List<User>> standingsLiveData = new MutableLiveData<>();
 
     public MatchRepository(Context context) {
         AppDatabase db = AppDatabase.getDatabase(context);
@@ -35,7 +37,7 @@ public class MatchRepository {
     }
 
     public LiveData<List<User>> getStandings() {
-        return matchDao.getStandings();
+        return standingsLiveData;
     }
 
     public void savePrediction(int matchId, int home, int away, final OnSaveListener listener) {
@@ -45,6 +47,7 @@ public class MatchRepository {
                 if (response.isSuccessful()) {
                     executor.execute(() -> matchDao.insertPrediction(response.body()));
                     if (listener != null) listener.onSuccess();
+                    refreshMatches(); // Actualizar tabla tras guardar
                 } else {
                     if (listener != null) listener.onError(response.code());
                 }
@@ -73,8 +76,6 @@ public class MatchRepository {
                             match.homeScore = dto.homeScore;
                             match.awayScore = dto.awayScore;
                             match.stage = dto.stage;
-
-                            // Calcular matchDay CDMX
                             try {
                                 ZonedDateTime utcDateTime = ZonedDateTime.parse(dto.kickoffUtc);
                                 ZonedDateTime cdmxDateTime = utcDateTime.withZoneSameInstant(CDMX_ZONE);
@@ -82,20 +83,31 @@ public class MatchRepository {
                             } catch (Exception e) {
                                 match.matchDay = "TBD";
                             }
-                            
                             entities.add(match);
-                            
-                            // Guardar predicciones si vienen
                             if (dto.myPrediction != null) matchDao.insertPrediction(dto.myPrediction);
-                            if (dto.rivalPrediction != null) matchDao.insertPrediction(dto.rivalPrediction);
+                            if (dto.rivalPrediction != null && dto.rivalPrediction.id != null) {
+                                matchDao.insertPrediction(dto.rivalPrediction);
+                            }
                         }
                         matchDao.insertMatches(entities);
                     });
                 }
             }
             @Override
-            public void onFailure(Call<List<ServerMatchDto>> call, Throwable t) {
-                Log.e("MatchRepository", "Refresh failed", t);
+            public void onFailure(Call<List<ServerMatchDto>> call, Throwable t) {}
+        });
+
+        // BAJAR STANDINGS REALES DEL SERVIDOR
+        apiService.getStandings().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    standingsLiveData.postValue(response.body());
+                }
+            }
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                Log.e("MatchRepository", "Standings refresh failed", t);
             }
         });
     }
