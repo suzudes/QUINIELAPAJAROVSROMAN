@@ -63,14 +63,20 @@ public class MatchRepository {
                     executor.execute(() -> {
                         List<MatchEntity> entities = new ArrayList<>();
                         for (ClosedMatchWithPredictions item : response.body()) {
-                            entities.add(item.match);
-                            if (item.predictions != null) {
-                                for (PredictionEntity p : item.predictions) {
-                                    matchDao.insertPrediction(p);
+                            if (item != null && item.match != null) {
+                                entities.add(item.match);
+                                if (item.predictions != null) {
+                                    for (PredictionEntity p : item.predictions) {
+                                        if (p != null) {
+                                            matchDao.insertPrediction(p);
+                                        }
+                                    }
                                 }
                             }
                         }
-                        matchDao.insertMatches(entities);
+                        if (!entities.isEmpty()) {
+                            matchDao.insertMatches(entities);
+                        }
                     });
                 }
             }
