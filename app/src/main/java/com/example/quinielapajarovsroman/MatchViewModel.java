@@ -25,13 +25,7 @@ public class MatchViewModel extends AndroidViewModel {
     public LiveData<List<User>> getStandings() { return standings; }
     public void refresh() { repository.refreshMatches(); }
 
-    public void savePrediction(int matchId, int home, int away, String userId) {
-        PredictionEntity p = new PredictionEntity();
-        p.matchId = matchId;
-        p.predHome = home;
-        p.predAway = away;
-        p.userId = userId;
-        p.state = "LOCKED";
-        repository.savePrediction(p);
+    public void savePrediction(int matchId, int home, int away, MatchRepository.OnSaveListener listener) {
+        repository.savePrediction(matchId, home, away, listener);
     }
 }

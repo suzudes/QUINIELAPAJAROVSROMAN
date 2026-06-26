@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.material)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

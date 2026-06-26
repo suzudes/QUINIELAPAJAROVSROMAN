@@ -3,32 +3,23 @@ package com.example.quinielapajarovsroman;
 import android.content.Context;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MatchRepository {
     private final MatchDao matchDao;
-    private final FootballApiService apiService;
+    private final ApiService apiService;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static final String API_TOKEN = "d8122a219a394bbaaee2b7883acb5372";
-    private static final ZoneId CDMX_ZONE = ZoneId.of("America/Mexico_City");
 
     public MatchRepository(Context context) {
         AppDatabase db = AppDatabase.getDatabase(context);
         matchDao = db.matchDao();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.football-data.org/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        apiService = retrofit.create(FootballApiService.class);
+        apiService = ApiClient.getService(context);
     }
 
     public LiveData<List<ClosedMatchWithPredictions>> getActiveMatches() {
@@ -43,67 +34,56 @@ public class MatchRepository {
         return matchDao.getStandings();
     }
 
-    public void savePrediction(PredictionEntity prediction) {
-        executor.execute(() -> matchDao.insertPrediction(prediction));
+    public void savePrediction(int matchId, int home, int away, final OnSaveListener listener) {
+        executor.execute(() -> {
+            apiService.submitPrediction(new PredictionRequest(matchId, home, away)).enqueue(new Callback<PredictionEntity>() {
+                @Override
+                public void onResponse(Call<PredictionEntity> call, Response<PredictionEntity> response) {
+                    if (response.isSuccessful()) {
+                        executor.execute(() -> matchDao.insertPrediction(response.body()));
+                        if (listener != null) listener.onSuccess();
+                    } else {
+                        if (listener != null) listener.onError(response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<PredictionEntity> call, Throwable t) {
+                    if (listener != null) listener.onError(-1);
+                }
+            });
+        });
     }
 
     public void refreshMatches() {
-        executor.execute(() -> {
-            try {
-                Response<FootballDataDtos.Response> response = apiService.getWorldCupMatches(API_TOKEN).execute();
+        apiService.getMatches().enqueue(new Callback<List<ClosedMatchWithPredictions>>() {
+            @Override
+            public void onResponse(Call<List<ClosedMatchWithPredictions>> call, Response<List<ClosedMatchWithPredictions>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<MatchEntity> entities = new ArrayList<>();
-                    for (FootballDataDtos.MatchDto dto : response.body().matches) {
-                        entities.add(mapToEntity(dto));
-                    }
-                    matchDao.insertMatches(entities);
-                    evaluarPartidosFinalizados();
+                    executor.execute(() -> {
+                        List<MatchEntity> entities = new ArrayList<>();
+                        for (ClosedMatchWithPredictions item : response.body()) {
+                            entities.add(item.match);
+                            if (item.predictions != null) {
+                                for (PredictionEntity p : item.predictions) {
+                                    matchDao.insertPrediction(p);
+                                }
+                            }
+                        }
+                        matchDao.insertMatches(entities);
+                    });
                 }
-            } catch (Exception e) {
-                Log.e("MatchRepository", "Error refreshing matches", e);
+            }
+
+            @Override
+            public void onFailure(Call<List<ClosedMatchWithPredictions>> call, Throwable t) {
+                Log.e("MatchRepository", "Refresh failed", t);
             }
         });
     }
 
-    private void evaluarPartidosFinalizados() {
-        List<PredictionEntity> pending = matchDao.getUnscoredPredictions();
-        for (PredictionEntity pred : pending) {
-            MatchEntity match = matchDao.getMatchById(pred.matchId);
-            if (match != null && "FINISHED".equals(match.status)) {
-                if ("CANCELLED".equals(pred.state)) {
-                    pred.points = 0;
-                } else {
-                    if (pred.predHome != null && pred.predAway != null &&
-                        pred.predHome.equals(match.homeScore) && 
-                        pred.predAway.equals(match.awayScore)) {
-                        pred.points = 1;
-                    } else {
-                        pred.points = 0;
-                    }
-                }
-                pred.state = "SCORED";
-                pred.scoredAt = System.currentTimeMillis();
-                matchDao.updatePrediction(pred);
-            }
-        }
-    }
-
-    private MatchEntity mapToEntity(FootballDataDtos.MatchDto dto) {
-        MatchEntity entity = new MatchEntity();
-        entity.id = dto.id;
-        entity.utcDate = dto.utcDate;
-        entity.status = dto.status;
-        entity.stage = dto.stage;
-        entity.group = dto.group;
-        entity.homeTeam = dto.homeTeam.name;
-        entity.awayTeam = dto.awayTeam.name;
-        if (dto.score != null && dto.score.fullTime != null) {
-            entity.homeScore = dto.score.fullTime.home;
-            entity.awayScore = dto.score.fullTime.away;
-        }
-        ZonedDateTime utcDateTime = ZonedDateTime.parse(dto.utcDate);
-        ZonedDateTime cdmxDateTime = utcDateTime.withZoneSameInstant(CDMX_ZONE);
-        entity.matchDay = cdmxDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE);
-        return entity;
+    public interface OnSaveListener {
+        void onSuccess();
+        void onError(int code);
     }
 }

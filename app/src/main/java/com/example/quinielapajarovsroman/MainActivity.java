@@ -20,16 +20,36 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TextView titleText, dateText;
     private SwipeRefreshLayout swipeRefresh;
-    private SessionManager sessionManager;
+    private SessionManager sessionManager; // Mantener para compatibilidad por ahora
+    private TokenManager tokenManager;
     private int currentTab = R.id.nav_today;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         
-        sessionManager = new SessionManager(this);
+        tokenManager = new TokenManager(this);
+        String savedToken = tokenManager.getToken();
 
+        if (savedToken == null) {
+            startActivity(new android.content.Intent(this, SettingsActivity.class));
+            finish();
+            return;
+        }
+
+        // Intentar login automático en cada inicio para asegurar cookie fresca
+        ApiClient.getService(this).login(savedToken).enqueue(new retrofit2.Callback<AuthResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<AuthResponse> call, retrofit2.Response<AuthResponse> response) {
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "ERROR DE SESIÓN. Revisa tu token.", Toast.LENGTH_LONG).show());
+                }
+            }
+            @Override
+            public void onFailure(retrofit2.Call<AuthResponse> call, Throwable t) {}
+        });
+
+        setContentView(R.layout.activity_main);
         initViews();
         setupViewModel();
         setupNavigation();
@@ -45,13 +65,22 @@ public class MainActivity extends AppCompatActivity {
 
         matchAdapter = new MatchAdapter();
         matchAdapter.setListener((match, home, away) -> {
-            String user = sessionManager.getUserName();
-            if (user == null || user.equals("Invitado")) {
-                Toast.makeText(this, "ENTRA CON TU LINK MÁGICO PRIMERO", Toast.LENGTH_LONG).show();
-            } else {
-                viewModel.savePrediction(match.id, home, away, user);
-                Toast.makeText(this, "PREDICCIÓN GUARDADA", Toast.LENGTH_SHORT).show();
-            }
+            viewModel.savePrediction(match.id, home, away, new MatchRepository.OnSaveListener() {
+                @Override
+                public void onSuccess() {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "PREDICCIÓN BLOQUEADA EN NUBE", Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onError(int code) {
+                    runOnUiThread(() -> {
+                        String msg = "ERROR AL GUARDAR";
+                        if (code == 403) msg = "VENTANA CERRADA (T-10)";
+                        if (code == 409) msg = "YA BLOQUEADA";
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                    });
+                }
+            });
         });
 
         recyclerView.setAdapter(matchAdapter);
@@ -119,6 +148,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateTimestamp() {
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        dateText.setText("SINCRO: " + now);
+        dateText.setText("SINCRO NUBE: " + now);
     }
 }
