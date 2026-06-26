@@ -96,7 +96,7 @@ app.get('/standings', async (req, res) => {
 
 // 5. El Corazón: /tick
 app.get('/tick', async (req, res) => {
-  if (req.query.secret !== process.env.TICK_SECRET) return res.status(403).send("Prohibido");
+  if (req.query.secret !== process.env.TICK_SECRET) return res.status(403).json({ok:false});
 
   try {
     // A. Refrescar Matches
@@ -104,25 +104,27 @@ app.get('/tick', async (req, res) => {
       headers: { 'X-Auth-Token': process.env.FOOTBALL_DATA_TOKEN }
     });
 
-    for (const apiMatch of footballRes.data.matches) {
-      await prisma.match.upsert({
-        where: { id: apiMatch.id },
-        update: {
-          status: apiMatch.status,
-          homeScore: apiMatch.score.fullTime.home,
-          awayScore: apiMatch.score.fullTime.away
-        },
-        create: {
-          id: apiMatch.id,
-          kickoffUtc: new Date(apiMatch.utcDate),
-          status: apiMatch.status,
-          homeTeam: apiMatch.homeTeam.name,
-          awayTeam: apiMatch.awayTeam.name,
-          homeScore: apiMatch.score.fullTime.home,
-          awayScore: apiMatch.score.fullTime.away,
-          stage: apiMatch.stage
-        }
-      });
+    if (footballRes.data && footballRes.data.matches) {
+      for (const apiMatch of footballRes.data.matches) {
+        await prisma.match.upsert({
+          where: { id: apiMatch.id },
+          update: {
+            status: apiMatch.status,
+            homeScore: apiMatch.score.fullTime.home,
+            awayScore: apiMatch.score.fullTime.away
+          },
+          create: {
+            id: apiMatch.id,
+            kickoffUtc: new Date(apiMatch.utcDate),
+            status: apiMatch.status,
+            homeTeam: apiMatch.homeTeam.name,
+            awayTeam: apiMatch.awayTeam.name,
+            homeScore: apiMatch.score.fullTime.home,
+            awayScore: apiMatch.score.fullTime.away,
+            stage: apiMatch.stage
+          }
+        });
+      }
     }
 
     // B. Evaluar Predicciones
@@ -141,10 +143,10 @@ app.get('/tick', async (req, res) => {
       }
     }
 
-    res.send("Tick exitoso");
+    res.json({ok:true}); // Respuesta mínima en JSON
   } catch (e) {
     console.error(e);
-    res.status(500).send("Error en tick");
+    res.status(500).json({ok:false, error: "fail"});
   }
 });
 
