@@ -38,23 +38,33 @@ app.get('/auth/:token', async (req, res) => {
 // 2. Guardar Predicción
 app.post('/predict', auth, async (req, res) => {
   const { matchId, predHome, predAway } = req.body;
+
+  if (matchId === undefined || predHome === undefined || predAway === undefined) {
+    return res.status(400).send("Faltan datos en el body");
+  }
+
   const match = await prisma.match.findUnique({ where: { id: parseInt(matchId) } });
 
-  if (!match) return res.status(404).send("Partido no encontrado");
+  if (!match) return res.status(404).send("Partido no encontrado en la base de datos");
 
   const now = new Date();
-  const deadline = new Date(match.kickoffUtc.getTime() - 10 * 60000);
-  if (now > deadline) return res.status(403).send("Ventana cerrada (T-10)");
+  const kickoff = new Date(match.kickoffUtc);
+  const deadline = new Date(kickoff.getTime() - 10 * 60000);
+
+  if (now > deadline) {
+    return res.status(403).send(`Ventana cerrada. Límite era: ${deadline.toISOString()}`);
+  }
 
   try {
     const pred = await prisma.prediction.upsert({
       where: { userId_matchId: { userId: req.user.id, matchId: parseInt(matchId) } },
-      update: {}, // Inmutable si ya existe
+      update: {},
       create: { userId: req.user.id, matchId: parseInt(matchId), predHome, predAway, state: 'LOCKED' }
     });
     res.json(pred);
   } catch (e) {
-    res.status(409).send("Ya existe una predicción bloqueada");
+    console.error("Error en upsert prediction:", e);
+    res.status(409).send("Ya tienes una predicción guardada para este juego");
   }
 });
 

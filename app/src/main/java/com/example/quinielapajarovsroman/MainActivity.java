@@ -74,9 +74,14 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onError(int code) {
                     runOnUiThread(() -> {
-                        String msg = "ERROR AL GUARDAR";
-                        if (code == 403) msg = "VENTANA CERRADA (T-10)";
-                        if (code == 409) msg = "YA BLOQUEADA";
+                        String msg = "ERROR " + code + ": ";
+                        if (code == 401) msg += "SESIÓN EXPIRADA. Re-identifícate.";
+                        else if (code == 403) msg += "VENTANA CERRADA (T-10)";
+                        else if (code == 404) msg += "PARTIDO NO ENCONTRADO EN NUBE";
+                        else if (code == 409) msg += "YA GUARDADO";
+                        else if (code == -1) msg += "SIN CONEXIÓN AL SERVIDOR";
+                        else msg += "INTENTA DE NUEVO";
+
                         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
                     });
                 }
