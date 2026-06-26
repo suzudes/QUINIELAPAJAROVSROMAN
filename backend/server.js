@@ -111,14 +111,16 @@ app.get('/tick', async (req, res) => {
           update: {
             status: apiMatch.status,
             homeScore: apiMatch.score.fullTime.home,
-            awayScore: apiMatch.score.fullTime.away
+            awayScore: apiMatch.score.fullTime.away,
+            homeTeam: apiMatch.homeTeam ? apiMatch.homeTeam.name : "TBD",
+            awayTeam: apiMatch.awayTeam ? apiMatch.awayTeam.name : "TBD"
           },
           create: {
             id: apiMatch.id,
             kickoffUtc: new Date(apiMatch.utcDate),
             status: apiMatch.status,
-            homeTeam: apiMatch.homeTeam.name,
-            awayTeam: apiMatch.awayTeam.name,
+            homeTeam: apiMatch.homeTeam ? apiMatch.homeTeam.name : "TBD",
+            awayTeam: apiMatch.awayTeam ? apiMatch.awayTeam.name : "TBD",
             homeScore: apiMatch.score.fullTime.home,
             awayScore: apiMatch.score.fullTime.away,
             stage: apiMatch.stage

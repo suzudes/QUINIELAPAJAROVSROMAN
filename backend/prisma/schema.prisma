@@ -18,8 +18,8 @@ model Match {
   id          Int          @id
   kickoffUtc  DateTime
   status      String       // SCHEDULED, TIMED, IN_PLAY, FINISHED
-  homeTeam    String
-  awayTeam    String
+  homeTeam    String?      // AHORA OPCIONAL
+  awayTeam    String?      // AHORA OPCIONAL
   homeScore   Int?
   awayScore   Int?
   stage       String
