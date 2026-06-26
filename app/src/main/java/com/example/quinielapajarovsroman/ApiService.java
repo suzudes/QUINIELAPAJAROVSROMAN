@@ -12,7 +12,7 @@ public interface ApiService {
     Call<AuthResponse> login(@Path("token") String token);
 
     @GET("matches")
-    Call<List<ClosedMatchWithPredictions>> getMatches();
+    Call<List<ServerMatchDto>> getMatches();
 
     @GET("standings")
     Call<List<User>> getStandings();
