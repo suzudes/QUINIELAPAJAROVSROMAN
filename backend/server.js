@@ -72,17 +72,19 @@ app.post('/predict', auth, async (req, res) => {
 app.get('/matches', auth, async (req, res) => {
   const matches = await prisma.match.findMany({
     orderBy: { kickoffUtc: 'asc' },
-    include: { predictions: true }
+    include: { predictions: { include: { user: true } } }
   });
 
   const response = matches.map(m => {
-    const myPred = m.predictions.find(p => p.userId === req.user.id);
-    const rivalPred = m.predictions.find(p => p.userId !== req.user.id);
+    const myPredRaw = m.predictions.find(p => p.userId === req.user.id);
+    const rivalPredRaw = m.predictions.find(p => p.userId !== req.user.id);
+
+    const mapPred = (p) => p ? { ...p, userName: p.user.name } : null;
 
     return {
       ...m,
-      myPrediction: myPred || null,
-      rivalPrediction: m.status === 'FINISHED' ? rivalPred : (rivalPred ? { state: 'LOCKED' } : null)
+      myPrediction: mapPred(myPredRaw),
+      rivalPrediction: m.status === 'FINISHED' ? mapPred(rivalPredRaw) : (rivalPredRaw ? { state: 'LOCKED', userName: rivalPredRaw.user.name } : null)
     };
   });
   res.json(response);

@@ -120,12 +120,12 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
                 color = Color.GRAY;
             }
 
-            String text = pred.userId + ": " + pred.predHome + " - " + pred.predAway + label;
+            String text = pred.userName + ": " + pred.predHome + " - " + pred.predAway + label;
             
-            if ("PAJARO".equals(pred.userId)) {
+            if ("PAJARO".equals(pred.userName)) {
                 holder.userPredictionText.setText(text);
                 holder.userPredictionText.setTextColor(color);
-            } else if ("ROMAN".equals(pred.userId)) {
+            } else if ("ROMAN".equals(pred.userName)) {
                 holder.rivalPredictionText.setText(text);
                 holder.rivalPredictionText.setTextColor(color);
             }

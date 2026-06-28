@@ -8,8 +8,9 @@ import androidx.annotation.NonNull;
 public class PredictionEntity {
     @PrimaryKey
     @NonNull
-    public String id; // Cambiado a String para aceptar UUID del servidor
+    public String id;
     public String userId; 
+    public String userName; // NUEVO: Para saber de quién es (PAJARO o ROMAN)
     public int matchId;
     public Integer predHome;
     public Integer predAway;
